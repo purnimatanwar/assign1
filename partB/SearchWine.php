@@ -1,5 +1,6 @@
 <html>
- <head>
+ <head> </head>
+<body>
 	<?php
 		$username = "webadmin";
 		$password = "Pur111990";
@@ -8,9 +9,7 @@
 		//connection to the database
 		$dbhandle = mysql_connect("localhost","webadmin", "Pur111990");
 		if(!$dbhandle)
-		{
-			 die("Unable to connect to MySQL");
-		}
+		   die("Unable to connect to MySQL");
 
 		$selected = mysql_select_db("winestore",$dbhandle)
 			  or die("Could not select winestore");
@@ -24,52 +23,40 @@
 		$MaxCost=$_GET['PriceR2'];
 		$Required=$_GET['Available'];
 		$Sold=$_GET['Ordered'];
-		if($RegionName=='All')
-		{
-			$WineQuery=mysql_query("SELECT A.wine_name AS WINE_NAME, E.variety AS GRAPE_VARIETY, A.year AS YEAR, B.winery_name AS WINERY_NAME , 
-						C.region_name AS REGION, F.cost AS COST, F.on_hand AS IN_STOCK, SUM(G.qty) AS QTY_SOLD, SUM(G.price) AS TOTAL_SALE 
-       						FROM wine AS A, winery AS B , region AS C, wine_variety AS D, grape_variety AS E, inventory AS F, items AS G 
-       						WHERE ( (A.winery_id=B.winery_id AND B.region_id=C.region_id AND A.wine_id=D.wine_id AND D.variety_id=E.variety_id
-                                                         AND A.wine_id=F.wine_id AND G.wine_id=A.wine_id)
-                                                         AND (   A.wine_name LIKE '%$WineName%') AND ( B.winery_name LIKE '%$WineryName%')
-                                                         AND (   E.variety LIKE '$GrapeName')
-                                                         AND (   A.year >= '$MinYear' AND A.year<= '$MaxYear')
-                                                         AND (   F.cost >= '$MinCost' AND F.cost <= '$MaxCost')
-						    	 AND (   F.on_hand>= '$Required')
-                                                      )
 
-		                		GROUP BY A.wine_id
-						HAVING SUM(G.qty)>= '$Sold'	
-                        			ORDER BY A.wine_name, E.variety ");
-		}
-		else
-		{
-			$WineQuery=mysql_query("SELECT A.wine_name AS WINE_NAME, E.variety AS GRAPE_VARIETY, A.year AS YEAR, B.winery_name AS WINERY_NAME ,
-						C.region_name AS REGION, F.cost AS COST,F.on_hand AS IN_STOCK, SUM(G.qty) AS QTY_SOLD, SUM(G.Price) AS TOTAL_SALE
-			                        FROM wine AS A, winery AS B , region AS C, wine_variety AS D, grape_variety AS E, inventory AS F, items AS G
-                        			WHERE ( (A.winery_id=B.winery_id AND B.region_id=C.region_id AND A.wine_id=D.wine_id AND D.variety_id=E.variety_id 
-						 	 AND A.wine_id=F.wine_id AND G.wine_id=A.wine_id)
-			                                 AND (   A.wine_name LIKE '%$WineName%') AND ( B.winery_name LIKE '%$WineryName%')
-                                 			 AND (   E.variety='$GrapeName') 
-							 AND (   C.region_name='$RegionName')
-                                			 AND (   A.year >= '$MinYear' AND A.year<= '$MaxYear') 
-							 AND (   F.cost >= '$MinCost' AND F.cost <= '$MaxCost')
-							 AND (   F.on_hand>= '$Required')
-                              			      )
-			                        GROUP BY A.wine_id
-						HAVING SUM(G.qty)>= '$Sold'
-			                        ORDER BY A.wine_name, E.variety");
+		$SqlQuery="SELECT A.wine_name AS WINE_NAME, E.variety AS GRAPE_VARIETY, A.year AS YEAR, B.winery_name AS WINERY_NAME , 
+       			   C.region_name AS REGION, F.cost AS COST, F.on_hand AS IN_STOCK, SUM(G.qty) AS QTY_SOLD, SUM(G.price) AS TOTAL_SALE 
+       			   FROM wine AS A, winery AS B , region AS C, wine_variety AS D, grape_variety AS E, inventory AS F, items AS G 
+       			   WHERE A.winery_id=B.winery_id AND B.region_id=C.region_id AND A.wine_id=D.wine_id AND D.variety_id=E.variety_id AND F.wine_id=A.wine_id AND G.wine_id=A.wine_id";
 
-		}
-?>
-<title>WINE SEARCH PAGE</title>
-<h1 align="center" > <font color="#CCFF00">  </font></h1>
-</head>
-<body bgcolor="#663333">
-<?php
-if(mysql_num_rows($WineQuery)>0)
+			if($WineName!="")
+				$SqlQuery.=" AND A.wine_name LIKE '$WineName%'";
+			if($WineryName!="")
+				$SqlQuery.=" AND B.winery_name LIKE '$WineryName%'";
+			if($GrapeName!="")
+			        $SqlQuery.=" AND E.variety LIKE '$GrapeName%'";
+			if($RegionName!="All"&& $RegionName!="")
+				$SqlQuery.=" AND C.region_name LIKE '$RegionName%'";
+			if($MinCost!="")
+				$SqlQuery.=" AND F.cost >= '$MinCost' AND F.cost <= '$MaxCost'";
+			if($MinYear!="")
+				$SqlQuery.="  AND  A.year >= '$MinYear' AND A.year<= '$MaxYear'";
+			if($Required!="0")
+				$SqlQuery.=" AND F.on_hand >='$Required'";
+
+			$SqlQuery.=" GROUP BY A.wine_id";
+			if($Sold!="0")
+                                $SqlQuery.=" HAVING SUM(G.qty)>='$Sold'";
+
+			$SqlQuery.=" ORDER BY A.wine_name, E.variety ";
+
+			$Result=mysql_query($SqlQuery);
+	echo"<title>SEARCH RESULT</title>";
+
+if($Result)
 {
-echo"<center><table border='1'>
+echo"<br/><br/><center><b> SEARCH RESULTS</b><br/><br/>";
+	echo"<table border='1'>
 <tr>
 <th>WINE NAME</th><th>WINERY NAME</th>
 <th>GRAPE VARIETY</th><th>YEAR</th>
@@ -77,20 +64,17 @@ echo"<center><table border='1'>
 <th>IN STOCK</th><th>QTY SOLD</th>
 <th>TOTAL SALE</th>
 </tr></center>";
- 	if($row=mysql_fetch_array($WineQuery))
-    	{
-	   while($row=mysql_fetch_array($WineQuery))
+ 	   while($row=mysql_fetch_array($Result))
            {   echo "<tr><td>$row[WINE_NAME]</td><td>$row[WINERY_NAME]</td>
 	       <td>$row[GRAPE_VARIETY]</td><td>$row[YEAR]</td>
 	       <td>$row[REGION]</td><td>$row[COST]</td>
 	       <td>$row[IN_STOCK]</td><td>$row[QTY_SOLD]</td> 
                <td>$row[TOTAL_SALE]</td></tr>\n";
 	    }
-       }
 }
 else
 {
-echo "Result not found";
+ echo"Result not found";
 }
 echo "</table>";
 ?>

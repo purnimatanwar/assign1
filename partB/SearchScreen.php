@@ -3,32 +3,49 @@
   <?php
 	if(isset($_GET['Submit']))
 	{
- 		if($_GET['YearR1']>=$_GET['YearR2'])
-		{
- 	 		echo "Enter valid range for date";  
-        	}
- 		else
-                {
-	 		if($_GET['PriceR1']>=$_GET['PriceR2'])
-        		{
-         			echo "Enter valid range for price";
-        		}
-			else
-        		{ 
-	 			$Wine=$_GET['Wine'];
-			        $Winery=$_GET['Winery'];
-          			$Grape=$_GET['Grape'];
-			        $Region=$_GET['Region'];
-          			$MinY=$_GET['YearR1'];
-          			$MaxY=$_GET['YearR2'];
-          			$MinC=$_GET['PriceR1'];
-          			$MaxC=$_GET['PriceR2'];
-          			$Req=$_GET['Available'];
-          			$Sld=$_GET['Ordered'];
+		if(isset($_GET['Wine']))
+                         if(is_numeric($_GET['Wine']))
+                                $error= "Enter valid text";
 
-   		 		header ('Location: http://54.252.202.27/assign1/partB/SearchWine.php?Wine='.$Wine.'&Winery='.$Winery.'&Grape='.$Grape.'&Region='.$Region.'&YearR1='.$MinY.'&YearR2='.$MaxY.'&PriceR1='.$MinC.'&PriceR2='.$MaxC.'&Available='.$Req.'&Ordered='.$Sld.'&Submit=SEARCH');
-			}
-		}	
+                if(isset($_GET['Winery']))
+                        if(is_numeric($_GET['Winery']))
+                                 $error= "Enter valid text";
+
+ 		if(isset($_GET['YearR1'])&& $_GET['YearR1']!="")
+   			if($_GET['YearR1']>=$_GET['YearR2'])
+				$error= "Enter valid range for date";  
+
+        	if(isset($_GET['PriceR1']) && $_GET['PriceR1']!="")
+	 		if($_GET['PriceR1']>=$_GET['PriceR2'])
+        			$error= "Enter valid range for price";
+
+                if(isset($_GET['Available']))
+			if(!is_numeric($_GET['Available']))
+				$error= "Enter valid number";
+
+		if(isset($_GET['Ordered']))
+	                if(!is_numeric($_GET['Ordered']))
+                                $error= "Enter valid number";
+
+		if($error)
+		{
+			echo $error;
+	 	}
+		else
+		{
+			$Wine=$_GET['Wine'];
+		        $Winery=$_GET['Winery'];
+			$Grape=$_GET['Grape'];
+		        $Region=$_GET['Region'];
+          		$MinY=$_GET['YearR1'];
+          		$MaxY=$_GET['YearR2'];
+          		$MinC=$_GET['PriceR1'];
+          		$MaxC=$_GET['PriceR2'];
+          		$Req=$_GET['Available'];
+          		$Sld=$_GET['Ordered'];
+
+	 		header ('Location: http://54.252.202.27/assign1/partB/SearchWine.php?Wine='.$Wine.'&Winery='.$Winery.'&Grape='.$Grape.'&Region='.$Region.'&YearR1='.$MinY.'&YearR2='.$MaxY.'&PriceR1='.$MinC.'&PriceR2='.$MaxC.'&Available='.$Req.'&Ordered='.$Sld.'&Submit=SEARCH');
+		}
 	}
 	$username = "webadmin";
 	$password = "Pur111990";
@@ -58,42 +75,44 @@
 	<center>
 		<form id="form1" name="form1" method="GET" action="<?php echo $_SERVER['PHP_SELF'];?>">
   			<p><label><font><br /> <br />  <br />  <br /> <b>WINE NAME:</b> </font>
-    				<input type="text" name="Wine" placeholder=" full name or part of it "/>
+    				<input type="text" name="Wine" placeholder=" full name or part of it" value="" />
 			   </label>
                         </p>
                         <p><label> <font><b> WINERY NAME: </b></font>
-			        <input type="text" name="Winery" placeholder="full name or part of it"/>
+			        <input type="text" name="Winery" placeholder="full name or part of it" value="" />
 			   </label>
   			</p>
  			<p><label> <font><b> GRAPE VARIETY:</b><font>
    				<select name="Grape">
-    					<?php
-					        while($row=mysql_fetch_array($GrapeVariety))
-					        echo"<option value='$row[variety]'>$row[variety]</option>\n";
-     					?>
+				<option value=""></option>
+						<?php
+						        while($row=mysql_fetch_array($GrapeVariety))
+						        echo"<option value='$row[variety]'>$row[variety]</option>\n";
+     						?>
 				</select>
 			   </label>
                         </p>
  			<p><label> <font><b> REGION:</b><font>
                                 <select name="Region">
-    					<?php
-					        while($row=mysql_fetch_array($RegionQuery))
-					        echo"<option value='$row[region_name]'>$row[region_name]</option>\n";
-  					?>
+				<option value=""></option>
+						<?php
+					        	while($row=mysql_fetch_array($RegionQuery))
+						        echo"<option value='$row[region_name]'>$row[region_name]</option>\n";
+  						?>
 				</select>
 				</label>
 			</p>
   			<p><label><font><b>YEAR RANGE </b></font>
-     				<label><font><b> MIN:</b></font></label>
-    					<select name="YearR1">
+     					<select name="YearR1">
+					<option value=""></option>
 					<?php
  						while($row=mysql_fetch_array($YearQuery1))
 					        echo"<option value='$row[year]' >$row[year]</option>\n";
   					?>
      					</select>
      				</label>
-	 			<label><font><b> MAX:</b></font></label>
-     					 <select name="YearR2">
+	 				 <select name="YearR2">	
+					<option value=""></option>
 					<?php
 					         while($row=mysql_fetch_array($YearQuery2))
 					         echo"<option value='$row[year]'>$row[year]</option>\n";
@@ -102,16 +121,16 @@
    				</label>
                         </p>
   			<p><label><font><b>PRICE RANGE </b></font>
-			        <label><font><b> MIN:</b></font></label>
-    					<select name="PriceR1">
+			                <select name="PriceR1">
+					<option value=""</option>
  					<?php
 						 while($pricerow=mysql_fetch_array($PriceQuery1))
         					 echo"<option value='$pricerow[PRICE]'>$pricerow[PRICE]</option>\n";
 					?>
     					</select>
 				</label>
-     			<label><font><b>MAX:</b></font></label>
-    	                                <select name="PriceR2">
+     					<select name="PriceR2">
+					<option value=""></option>
      					<?php
 					     	while($pricerow=mysql_fetch_array($PriceQuery2))
 					        echo"<option value='$pricerow[PRICE]'>$pricerow[PRICE]</option>\n";
